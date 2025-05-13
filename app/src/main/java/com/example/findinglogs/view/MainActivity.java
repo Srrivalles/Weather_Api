@@ -33,10 +33,16 @@ public class MainActivity extends AppCompatActivity {
         adapter = new WeatherListAdapter(this, weathers);
         recyclerView.setAdapter(adapter);
         mainViewModel.getWeatherList().observe(this,
-                weathers -> adapter.updateWeathers(weathers));
+                weathers -> {
 
-        fetchButton.setOnClickListener(v ->
-                Toast.makeText(MainActivity.this, "Not Implemenented yet",
-                Toast.LENGTH_SHORT).show());
+                    android.util.Log.d("DEBUG_WEATHER", "Recebido: " + weathers.size());
+                    adapter.updateWeathers(weathers);
+                });
+
+        fetchButton.setOnClickListener(v -> {
+            Toast.makeText(MainActivity.this, "Atualizando dados...", Toast.LENGTH_SHORT).show();
+            mainViewModel.refreshForecasts();
+        });
+
     }
 }

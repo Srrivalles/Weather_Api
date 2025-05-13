@@ -18,6 +18,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import java.util.Set;
+import java.util.HashSet;
+
 public class MainViewModel extends AndroidViewModel {
 
     private static final String TAG = MainViewModel.class.getSimpleName();
@@ -43,17 +46,26 @@ public class MainViewModel extends AndroidViewModel {
         fetchAllForecasts();
         handler.postDelayed(fetchRunnable, FETCH_INTERVAL);
     }
+    public void refreshForecasts() {
+        fetchAllForecasts();
+    }
+
 
     private void fetchAllForecasts() {
         if (Logger.ISLOGABLE) Logger.d(TAG, "fetchAllForecasts()");
+        handler.removeCallbacks(fetchRunnable);
+
         HashMap<String, String> localizations = mRepository.getLocalizations();
+        Set<String> uniqueCoords = new HashSet<>(localizations.values());
+
         List<Weather> updatedList = new ArrayList<>();
 
-        for (String latlon : localizations.values()) {
+        for (String latlon : uniqueCoords) {
             mRepository.retrieveForecast(latlon, new WeatherCallback() {
-                @Override
                 public void onSuccess(Weather result) {
+                    android.util.Log.d("DEBUG_WEATHER", "Cidade: " + result.getName() + ", Temp: " + result.getMain().getTemp());
                     updatedList.add(result);
+
                     if (updatedList.size() == localizations.size()) {
                         _weatherList.setValue(updatedList);
                         handler.postDelayed(fetchRunnable, FETCH_INTERVAL);
@@ -67,6 +79,7 @@ public class MainViewModel extends AndroidViewModel {
             });
         }
     }
+
 
     @Override
     protected void onCleared() {
